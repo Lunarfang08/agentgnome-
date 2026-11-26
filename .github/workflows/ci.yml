@@ -33,7 +33,7 @@ jobs:
         run: uv run --no-sync alembic upgrade head
         env:
           AG_DATABASE_URL: sqlite+aiosqlite:////tmp/agentgenome-migration.db
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: python-${{ matrix.python }}
@@ -75,7 +75,7 @@ jobs:
       - run: uv run --no-sync alembic upgrade head
       - run: uv run --no-sync python scripts/seed.py
       - run: uv run --no-sync pytest tests/integration --junitxml=reports/postgres.xml
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with: { name: postgres-results, path: reports/, retention-days: 7 }
   browser:
@@ -114,7 +114,7 @@ jobs:
       - name: Capture service logs
         if: always()
         run: docker compose -f infrastructure/compose/compose.yaml logs --no-color > reports/services.log
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: browser-and-recovery
