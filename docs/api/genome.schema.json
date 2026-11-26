@@ -1,0 +1,387 @@
+{
+  "$defs": {
+    "Context": {
+      "additionalProperties": false,
+      "properties": {
+        "maxInputTokens": {
+          "default": 48000,
+          "maximum": 1000000,
+          "minimum": 256,
+          "title": "Maxinputtokens",
+          "type": "integer"
+        },
+        "reservedOutputTokens": {
+          "default": 4096,
+          "minimum": 1,
+          "title": "Reservedoutputtokens",
+          "type": "integer"
+        },
+        "compactionThreshold": {
+          "default": 0.75,
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Compactionthreshold",
+          "type": "number"
+        },
+        "progressiveDisclosure": {
+          "default": true,
+          "title": "Progressivedisclosure",
+          "type": "boolean"
+        },
+        "preserve": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Preserve",
+          "type": "array"
+        }
+      },
+      "title": "Context",
+      "type": "object"
+    },
+    "Evaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "suite": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Suite",
+          "type": "string"
+        }
+      },
+      "required": [
+        "suite"
+      ],
+      "title": "Evaluation",
+      "type": "object"
+    },
+    "Evolution": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "mutablePaths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Mutablepaths",
+          "type": "array"
+        },
+        "approvalRequired": {
+          "const": true,
+          "default": true,
+          "title": "Approvalrequired",
+          "type": "boolean"
+        }
+      },
+      "title": "Evolution",
+      "type": "object"
+    },
+    "Harness": {
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "default": "plan-execute-verify",
+          "enum": [
+            "plan-execute-verify",
+            "tool-loop",
+            "dag"
+          ],
+          "title": "Strategy",
+          "type": "string"
+        },
+        "maxIterations": {
+          "default": 30,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Maxiterations",
+          "type": "integer"
+        },
+        "checkpointEachStep": {
+          "const": true,
+          "default": true,
+          "title": "Checkpointeachstep",
+          "type": "boolean"
+        }
+      },
+      "title": "Harness",
+      "type": "object"
+    },
+    "Limits": {
+      "additionalProperties": false,
+      "properties": {
+        "maxWallSeconds": {
+          "default": 900,
+          "maximum": 86400,
+          "minimum": 1,
+          "title": "Maxwallseconds",
+          "type": "integer"
+        },
+        "maxCostUsd": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Maxcostusd"
+        },
+        "maxTotalTokens": {
+          "default": 150000,
+          "maximum": 10000000,
+          "minimum": 1,
+          "title": "Maxtotaltokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "maxCostUsd"
+      ],
+      "title": "Limits",
+      "type": "object"
+    },
+    "Memory": {
+      "additionalProperties": false,
+      "properties": {
+        "namespaces": {
+          "items": {
+            "enum": [
+              "semantic",
+              "episodic",
+              "procedural"
+            ],
+            "type": "string"
+          },
+          "title": "Namespaces",
+          "type": "array"
+        },
+        "topK": {
+          "default": 5,
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Topk",
+          "type": "integer"
+        },
+        "writePolicy": {
+          "const": "verified-only",
+          "default": "verified-only",
+          "title": "Writepolicy",
+          "type": "string"
+        }
+      },
+      "title": "Memory",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9-]{0,62}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Version",
+          "type": "string"
+        },
+        "parents": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Parents",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Model": {
+      "additionalProperties": false,
+      "properties": {
+        "route": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Route",
+          "type": "string"
+        },
+        "fallbackRoutes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 5,
+          "title": "Fallbackroutes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "route"
+      ],
+      "title": "Model",
+      "type": "object"
+    },
+    "Sandbox": {
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "enum": [
+            "trusted-fixture",
+            "restricted-gvisor",
+            "firecracker"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "cpu": {
+          "default": 2,
+          "maximum": 64,
+          "minimum": 1,
+          "title": "Cpu",
+          "type": "integer"
+        },
+        "memoryMiB": {
+          "default": 1024,
+          "maximum": 65536,
+          "minimum": 64,
+          "title": "Memorymib",
+          "type": "integer"
+        },
+        "networkPolicy": {
+          "const": "deny-by-default",
+          "default": "deny-by-default",
+          "title": "Networkpolicy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile"
+      ],
+      "title": "Sandbox",
+      "type": "object"
+    },
+    "Spec": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/Model"
+        },
+        "harness": {
+          "$ref": "#/$defs/Harness"
+        },
+        "context": {
+          "$ref": "#/$defs/Context"
+        },
+        "skills": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Skills",
+          "type": "array"
+        },
+        "memory": {
+          "$ref": "#/$defs/Memory"
+        },
+        "tools": {
+          "$ref": "#/$defs/Tools"
+        },
+        "sandbox": {
+          "$ref": "#/$defs/Sandbox"
+        },
+        "limits": {
+          "$ref": "#/$defs/Limits"
+        },
+        "evaluation": {
+          "$ref": "#/$defs/Evaluation"
+        },
+        "evolution": {
+          "$ref": "#/$defs/Evolution"
+        }
+      },
+      "required": [
+        "model",
+        "tools",
+        "sandbox",
+        "limits",
+        "evaluation"
+      ],
+      "title": "Spec",
+      "type": "object"
+    },
+    "Tools": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Allowed",
+          "type": "array"
+        },
+        "programmaticCalling": {
+          "default": false,
+          "title": "Programmaticcalling",
+          "type": "boolean"
+        },
+        "maxCalls": {
+          "default": 100,
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Maxcalls",
+          "type": "integer"
+        },
+        "maxConcurrency": {
+          "default": 5,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Maxconcurrency",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "allowed"
+      ],
+      "title": "Tools",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "agentgenome.io/v1",
+      "title": "Apiversion",
+      "type": "string"
+    },
+    "kind": {
+      "const": "AgentGenome",
+      "title": "Kind",
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+    "spec": {
+      "$ref": "#/$defs/Spec"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

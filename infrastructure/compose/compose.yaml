@@ -1,0 +1,130 @@
+name: agentgenome
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_PASSWORD: local-postgres-admin
+    ports: ["127.0.0.1:55432:5432"]
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  temporal:
+    image: temporalio/auto-setup:1.29.1
+    environment:
+      SKIP_DB_CREATE: "true"
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: local-temporal
+      POSTGRES_SEEDS: postgres
+    depends_on:
+      postgres: { condition: service_healthy }
+    ports: ["127.0.0.1:7233:7233"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "temporal",
+          "operator",
+          "cluster",
+          "health",
+          "--address",
+          "temporal:7233",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  redis:
+    image: redis:7.4.2-alpine
+    command:
+      [
+        "redis-server",
+        "--maxmemory",
+        "128mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+      ]
+    ports: ["127.0.0.1:56379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  minio:
+    image: ${AG_MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: local-development
+      MINIO_ROOT_PASSWORD: local-development-secret
+    ports: ["127.0.0.1:9000:9000", "127.0.0.1:9001:9001"]
+    volumes: ["minio:/data"]
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.5
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: local-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: local-admin-password
+    ports: ["127.0.0.1:8081:8080"]
+    volumes: ["./realm.json:/opt/keycloak/data/import/realm.json:ro"]
+  api:
+    build: { context: ../.., dockerfile: infrastructure/compose/Dockerfile }
+    command:
+      [
+        "uvicorn",
+        "apps.api.main:create_app",
+        "--factory",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8080",
+      ]
+    init: true
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    env_file: ../../.env
+    environment:
+      AG_DATABASE_URL: postgresql+asyncpg://agentgenome:local-development@postgres:5432/agentgenome
+      AG_TEMPORAL_ADDRESS: temporal:7233
+      AG_REDIS_URL: redis://redis:6379/0
+      AG_S3_ENDPOINT: http://minio:9000
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      temporal: { condition: service_healthy }
+      redis: { condition: service_healthy }
+  worker:
+    build: { context: ../.., dockerfile: infrastructure/compose/Dockerfile }
+    command: ["python", "-m", "workers.main"]
+    healthcheck: { disable: true }
+    init: true
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    env_file: ../../.env
+    environment:
+      AG_DATABASE_URL: postgresql+asyncpg://agentgenome:local-development@postgres:5432/agentgenome
+      AG_TEMPORAL_ADDRESS: temporal:7233
+    depends_on:
+      temporal: { condition: service_healthy }
+  dashboard:
+    build: { context: ../.., dockerfile: apps/dashboard/Dockerfile }
+    init: true
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    env_file: ../../.env
+    environment:
+      API_URL: http://api:8080
+    ports: ["127.0.0.1:3000:3000"]
+volumes:
+  postgres:
+  minio:

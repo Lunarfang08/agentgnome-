@@ -1,0 +1,7 @@
+# Explicit source-build override; no automatic storage substitution.
+services:
+  minio:
+    image: agentgenome-minio-local:2025-04-22
+    build:
+      context: ../..
+      dockerfile: infrastructure/compose/Minio.Dockerfile

@@ -1,0 +1,13 @@
+{
+  "realm": "agentgenome",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "agentgenome",
+      "publicClient": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://127.0.0.1:3000/*"]
+    }
+  ]
+}

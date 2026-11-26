@@ -1,0 +1,26 @@
+{
+  "apiVersion": "agentgenome.io/v1",
+  "kind": "AgentGenome",
+  "metadata": {
+    "name": "procurement-demo",
+    "version": "1.0.0",
+    "parents": []
+  },
+  "spec": {
+    "model": {
+      "route": "deterministic-procurement"
+    },
+    "tools": {
+      "allowed": ["inventory.read", "orders.prepare", "orders.submit"]
+    },
+    "sandbox": {
+      "profile": "trusted-fixture"
+    },
+    "limits": {
+      "maxCostUsd": "1.00"
+    },
+    "evaluation": {
+      "suite": "procurement-integrity@1.0.0"
+    }
+  }
+}
